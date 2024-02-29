@@ -1,5 +1,6 @@
 {
   "name": "bamazon",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,7 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "console.table": "^0.10.0",
     "dotenv": "^16.4.5",
+    "inquirer": "^9.2.15",
     "mysql": "^2.18.1"
   }
 }
