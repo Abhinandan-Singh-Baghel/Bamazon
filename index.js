@@ -93,7 +93,7 @@ function singleItemChoice() {
           console.log(divider);
           idChoiceArray.push(numberValue);
           selectedItemPriceArray.push(res[0].item_price);
-          // quantityChoice();
+           quantityChoice();
         });
 
 
@@ -109,4 +109,57 @@ function singleItemChoice() {
       singleItemChoice();
     }
   });
+}
+
+function quantityChoice() {
+  inquirer.prompt([
+    {
+      type: "input",
+      name: "quantityQuery",
+      message: "How many of this item would you like?"
+    }
+  ]).then(answers => {
+    console.log(divider);
+    const quanParseInt = parseInt(answers.quantityQuery);
+    connection.query("SELECT stock_quantity from products WHERE item_id = " + idChoiceArray[0], function(err, res){
+      if(err) throw err;
+      if(!isNaN(answers.quantityQuery)){
+
+        if(quanParseInt <= res[0].stock_quantity){
+          quantityInStockArray.push(res[0].stock_quantity);
+          quantityRequestedArray.push(answers.quantityQuery);
+          updateProduct();
+        } else {
+          console.log("We're sorry , we do not have that many of your requested item in stock! Please try again ! \n ");
+          quantityChoice();
+        }
+        
+
+      }else {
+        console.log("\n\n Bamazon only uses numbers to identify their quantities. Please try again. \n\n");
+        quantityChoice();
+      }
+    });
+  });
+};
+
+function updateProduct(){
+  console.log("Thank you for your purchase!");
+  const query = connection.query(
+    "UPDATE products SET ? WHERE ?",
+    [
+      {
+        stock_quantity: quantityInStockArray[0] - quantityRequestedArray[0]
+      },
+      {
+        item_id: idChoiceArray[0]
+      }
+    ],
+    function (err, res){
+      const totalPrice = selectedItemPriceArray[0] * quantityRequestedArray[0];
+      const result = (Math.round(totalPrice * 100)/100).toFixed(2);
+      console.log(divider + `\n The total price of your purchase is Rs${result}.\n Have a fantastic day!`);
+      connection.end();
+    }
+  );
 }
